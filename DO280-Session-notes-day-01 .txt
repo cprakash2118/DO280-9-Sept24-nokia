@@ -238,3 +238,163 @@ oc diff -f depl.yaml
 
 
 
+git.ocp4.example.com [registry.ocp4.example.com ]
+
+
+##############
+Kustomize Overlays :-
+- It manage resource manifest more organized way.
+- Multiple env [prod, stag, dev, test, INT etc].
+
+To implement kustomization.
+
+base
+├── configmap.yaml
+├── deployment.yaml
+├── secret.yaml
+├── service.yaml
+├── route.yaml
+└── kustomization.yaml
+
+vim kustomization.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- configmap.yaml
+- deployment.yaml
+- secret.yaml
+- service.yaml
+- route.yaml
+
+
+Overlays:-
+base
+├── configmap.yaml
+├── deployment.yaml
+├── secret.yaml
+├── service.yaml
+├── route.yaml
+└── kustomization.yaml
+overlay
+└── development
+    └── kustomization.yaml
+	|- cm.yaml 
+	|- deployment.yaml 
+└── testing
+    └── kustomization.yaml
+└── production
+    ├── kustomization.yaml
+    └── patch.yam
+	|- deployment.yaml 
+
+
+
+- patch: |- 
+ -  op: replace
+    path: /spec/replicas
+    value: 15
+  target:
+    kind: Deployment
+    name: frontend
+  resources: 
+    - ../../base
+commonLabels: 
+ env: test
+
+
+Kustomize Overlays
+
+##############################
+Unit -2 - Deploy Packaged Applications:-
+
+- OpenShift Templates 
+- Helm Charts
+
+
+- OpenShift Templates:-
+ - OpenShift/kubernetes resources-
+   [pod,service,replicaset,deployment,statefulset,secret,configmap etc ]
+  
+ - Resources or Objects w.r.t Template  
+  kind: Pod 
+  kind: Deployment 
+  kind: Secret
+
+ - namespace (w.r.t OCP - project)
+   projects/namespace:-
+   - kube* [ belongs to kubernetes]
+   - openshift* [belongs to OCP project]
+   - In every projects some applications deployed
+     FYI- some applications means - kubernetes/OpenShift services.
+
+-n [pointing towards specpic namespace]
+
+-  oc process --parameters cache-service -n openshift
+-  oc process --parameters -f my-cache-service.yaml
+-  oc get template cache-service -o yaml -n openshift
+-  oc new-app --template=cache-service -p APPLICATION_USER=my-user 
+
+
+
+Deploy applications via template:-
+$ oc process my-cache-service  -p APPLICATION_USER=user1 -o yaml > my-cache-service-manifest.yaml
+$ oc apply -f my-cache-service-manifest.yaml 
+
+$ oc process my-cache-service --param-file=my-cache-service-params.env | oc apply -f -
+
+$ oc process my-cache-service --param-file=my-cache-service-params.env  -o yaml > mytemp.yaml 
+$ oc apply mytemp.yaml
+
+$ oc diff -f mytemp.yaml
+
+
+##########
+Helm Charts
+
+
+To deploy MetalLB on your Kubernetes cluster using Helm and then configure an Ingress controller along with services exposed via NodePort and LoadBalancer, you'll follow a sequence of steps.
+
+
+1-Install Helm on CentOS 9, Download the Helm binary:
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+
+2- Run the Helm installation script:
+chmod 700 get_helm.sh
+./get_helm.sh
+
+Verify the Helm installation:
+helm version
+
+3- Add the MetalLB Helm Repository
+Add the MetalLB Helm repository:
+helm repo add metallb https://metallb.github.io/metallb
+
+4- Update your Helm repositories:
+helm repo update
+
+5- Install MetalLB using Helm- Create a namespace for MetalLB
+kubectl create namespace metallb-system
+
+6- Install MetalLB:
+helm install metallb metallb/metallb --namespace metallb-system
+
+
+
+
+
+	 
+
+
+
+   
+
+
+
+
+
+
+
+
+
+
